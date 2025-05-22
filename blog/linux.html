@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comandos y Gestión de Usuarios en Linux | Pilar on Cloud</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #121212; color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+    a { color: #bb86fc; text-decoration: none; }
+    a:hover { color: #d0a8ff; text-decoration: underline; }
+    .section-title { margin-top: 40px; margin-bottom: 20px; color: #bb86fc; }
+    pre, code { background-color: #232323; color: #bb86fc; padding: 0.2em 0.4em; border-radius: 4px; }
+    .btn-outline-light { border-color: #bb86fc; color: #bb86fc; }
+    .btn-outline-light:hover { background-color: #bb86fc; color: #121212; }
+    ul, ol { margin-bottom: 1rem; }
+    .explicacion { color: #ccc; font-size: 1.1em; margin-bottom: 2rem; }
+    h3, h4 { color: #bb86fc; }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <h1 class="section-title">Comandos y Gestión de Usuarios en Linux</h1>
+    <p class="explicacion">
+      Esta guía resume los comandos esenciales de Linux y los procedimientos clave para la gestión de usuarios, permisos, SSH, generación de contraseñas y otras tareas administrativas habituales. Ideal para consulta rápida y para quienes están aprendiendo administración de sistemas.
+    </p>
+
+    <h3>Alta de usuario Linux</h3>
+    <ol>
+      <li>Identifícate como <strong>root</strong> o usa <code>sudo</code> para crear usuarios.</li>
+      <li>
+        <strong>Crear usuario con home y shell:</strong>
+        <pre><code>sudo useradd -m -N -s /bin/bash fulanito</code></pre>
+        <ul>
+          <li><code>-m</code>: Crea el directorio home del usuario.</li>
+          <li><code>-N</code>: No crea un grupo con el nombre del usuario.</li>
+          <li><code>-s</code>: Define la shell asignada.</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Asignar contraseña:</strong>
+        <pre><code>sudo passwd fulanito</code></pre>
+      </li>
+      <li>
+        <strong>Dar permisos sudo:</strong>
+        <ul>
+          <li>Edita <code>/etc/sudoers</code> con <code>sudo visudo</code> y añade debajo de <code>root ALL=(ALL:ALL) ALL</code>:</li>
+        </ul>
+        <pre><code>fulanito ALL=(ALL:ALL) ALL</code></pre>
+        <ul>
+          <li>O añade al grupo sudo:</li>
+        </ul>
+        <pre><code>sudo adduser fulanito sudo</code></pre>
+      </li>
+      <li>
+        <strong>Deshabilitar contraseña de usuario:</strong>
+        <pre><code>sudo usermod -L nombre_de_usuario</code></pre>
+        <span class="text-secondary">Esto bloquea el acceso por contraseña.</span>
+      </li>
+    </ol>
+
+    <h3>Gestión de permisos en archivos y directorios</h3>
+    <ul>
+      <li>Ver permisos: <code>ls -ltr</code></li>
+      <li>Asignar propietario: <code>chown usuario archivo</code></li>
+      <li>Modificar permisos: <code>chmod 740 script.sh</code></li>
+      <li>
+        <strong>Permisos octales:</strong>
+        <ul>
+          <li>r = 4, w = 2, x = 1</li>
+          <li>Ejemplo: <code>chmod 755 archivo</code> (rwxr-xr-x)</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Permisos simbólicos:</strong>
+        <ul>
+          <li><code>u</code>: usuario, <code>g</code>: grupo, <code>o</code>: otros, <code>a</code>: todos</li>
+          <li><code>+</code>: añade permiso, <code>-</code>: quita permiso</li>
+          <li>Ejemplo: <code>chmod a+x archivo</code></li>
+        </ul>
+      </li>
+      <li>
+        <a href="https://chmod-calculator.com/" target="_blank">Calculadora de permisos online</a>
+      </li>
+    </ul>
+
+    <h3>Comandos de Archivos y Directorios</h3>
+    <ul>
+      <li>Crear carpeta: <code>mkdir nombre_carpeta</code></li>
+      <li>Crear carpeta con subcarpeta: <code>mkdir -p carpeta_prueba2/prueba2</code></li>
+      <li>Eliminar carpeta: <code>rm -r nombre_del_directorio</code></li>
+      <li>Crear archivo: <code>touch nombre_archivo</code></li>
+      <li>Editar archivo: <code>nano nombre_archivo</code></li>
+      <li>Ver todas las carpetas: <code>ls -all</code></li>
+      <li>Visualizar contenido de archivo: <code>cat archivo.txt</code></li>
+      <li>Crear archivo con contenido: <code>echo 'hola mundo' &gt; saludo.txt</code></li>
+      <li>Agregar contenido al final: <code>echo 'nuevo texto' &gt;&gt; saludo.txt</code></li>
+    </ul>
+
+    <h3>Procesos y Búsqueda</h3>
+    <ul>
+      <li>Ver programas en ejecución: <code>top</code></li>
+      <li>Búsqueda en archivo de texto: <code>grep 'texto' archivo.txt</code></li>
+      <li>Concatenar procesos: <code>|</code> (pipe). Ejemplo: <code>cat saludo.txt | grep cruel</code></li>
+    </ul>
+
+    <h3>Copiar y Mover</h3>
+    <ul>
+      <li>Copiar archivos/carpetas: <code>cp archivo1 archivo2</code></li>
+      <li>Copiar carpeta completa: <code>cp -r carpeta_prueba2 carpeta_prueba/</code></li>
+      <li>Mover archivos/carpetas: <code>mv origen destino</code></li>
+    </ul>
+
+    <h3>Alias y Visualización</h3>
+    <ul>
+      <li>Alias: puedes crear alias para comandos frecuentes.</li>
+      <li>Concatenar comandos: usa <code>;</code></li>
+      <li>Mostrar líneas del principio: <code>head archivo.txt</code></li>
+      <li>Mostrar líneas del final: <code>tail archivo.txt</code></li>
+    </ul>
+
+    <h3>Compresión y Búsqueda Avanzada</h3>
+    <ul>
+      <li>Comprimir archivos: <code>tar -czvf carpeta.tar.gz carpeta/</code></li>
+      <li>Descomprimir archivos: <code>tar -xzvf carpeta.tar.gz</code></li>
+      <li>Buscar por parámetros: <code>cut</code></li>
+      <li>Buscar y reemplazar por patrones: <code>sed</code></li>
+    </ul>
+
+    <h3>Automatización y Scripts</h3>
+    <ul>
+      <li>Automatizar tareas: <code>script</code></li>
+      <li>Scripts con bucles, condicionales y otros: usa <code>bash</code> o <code>sh</code></li>
+      <li>Puedes pasarle parámetros a los scripts.</li>
+    </ul>
+
+    <h3>Generación de contraseñas seguras</h3>
+    <ul>
+      <li>
+        <strong>Con urandom:</strong>
+        <pre><code>cat /dev/urandom | tr -dc A-Za-z0-9 | head -c15; echo</code></pre>
+      </li>
+      <li>
+        <strong>Con pwgen:</strong>
+        <pre><code>pwgen 12 3</code></pre>
+        <span class="text-secondary">Genera 3 contraseñas de 12 caracteres.</span>
+      </li>
+    </ul>
+
+    <h3>Gestión de llaves SSH</h3>
+    <ol>
+      <li>
+        <strong>Generar llave SSH:</strong>
+        <pre><code>ssh-keygen -t rsa -b 4096</code></pre>
+        <span class="text-secondary">No pongas contraseña si quieres acceso sin passphrase.</span>
+      </li>
+      <li>
+        <strong>Copiar llave pública al servidor remoto:</strong>
+        <pre><code>ssh-copy-id usuario@ip_remota</code></pre>
+        <span class="text-secondary">O manualmente, añadiendo el contenido de <code>id_rsa.pub</code> a <code>~/.ssh/authorized_keys</code> en el servidor.</span>
+      </li>
+      <li>
+        <strong>Configurar archivo <code>~/.ssh/config</code>:</strong>
+        <pre><code>Host server1
+  Hostname 10.0.155.69
+  User sistemas
+  Port 22
+  IdentityFile ~/.ssh/id_rsa
+  ServerAliveInterval 60
+  ServerAliveCountMax 30
+</code></pre>
+        <span class="text-secondary">Permite definir alias y parámetros personalizados para cada host.</span>
+      </li>
+    </ol>
+
+    <h3>DNS y Red</h3>
+    <ul>
+      <li>
+        <strong>Cambiar DNS en Ubuntu:</strong>
+        <pre><code>/etc/netplan/50-cloud-init.yaml</code></pre>
+        <span class="text-secondary">Edita la sección <code>nameservers</code> y aplica cambios con <code>sudo netplan apply</code>.</span>
+      </li>
+      <li>
+        <strong>DNS de Umbrella:</strong> 208.67.222.222, 208.67.220.220
+      </li>
+    </ul>
+
+    <h3>Revisión y Auditoría</h3>
+    <ul>
+      <li>Revisar puertos abiertos: <code>netstat -tulpn</code></li>
+      <li>Revisar cuentas con contraseñas vacías: <code>cat /etc/shadow | awk -F: '($2==""){print $1}'</code></li>
+      <li>Incorporar usuario al grupo sudo: <code>usermod -aG sudo usuario</code></li>
+    </ul>
+
+    <h3>Instalaciones útiles</h3>
+    <ul>
+      <li>
+        <strong>NodeJS:</strong>
+        <pre><code>sudo apt update
+sudo apt install nodejs npm
+node -v
+</code></pre>
+      </li>
+      <li>
+        <strong>Certificados HTTPS con certbot:</strong>
+        <pre><code>sudo snap install core
+sudo snap refresh core
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+sudo certbot --apache
+sudo ufw allow https
+</code></pre>
+      </li>
+    </ul>
+
+    <div class="mt-4">
+      <a href="index.html" class="btn btn-outline-light">Volver al blog</a>
+    </div>
+  </div>
+</body>
+</html>

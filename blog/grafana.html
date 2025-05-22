@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instalación y Configuración de Grafana | Pilar on Cloud</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #121212; color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+    a { color: #bb86fc; text-decoration: none; }
+    a:hover { color: #d0a8ff; text-decoration: underline; }
+    .section-title { margin-top: 40px; margin-bottom: 20px; color: #bb86fc; }
+    .subsection-title { color: #bb86fc; margin-top: 2rem; }
+    pre, code { background-color: #232323; color: #bb86fc; padding: 0.2em 0.4em; border-radius: 4px; }
+    .btn-outline-light { border-color: #bb86fc; color: #bb86fc; }
+    .btn-outline-light:hover { background-color: #bb86fc; color: #121212; }
+    ul, ol { margin-bottom: 1rem; }
+    .explicacion { color: #ccc; font-size: 1.1em; margin-bottom: 2rem; }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <h1 class="section-title text-center">Instalación y Configuración de Grafana</h1>
+    <p class="explicacion text-center">
+      En esta guía aprenderás a instalar Grafana en Ubuntu, activarlo como servicio y conectarlo con Google Sheets para visualizar datos en dashboards personalizados.
+    </p>
+
+    <h2 class="subsection-title">1. Instalación de Grafana en Ubuntu</h2>
+    <ol>
+      <li>
+        <strong>Descargar la llave GPG de Grafana:</strong><br>
+        Esto permite que el sistema confíe en los paquetes descargados del repositorio oficial.
+        <pre><code>wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -</code></pre>
+      </li>
+      <li>
+        <strong>Añadir el repositorio de Grafana:</strong>
+        <pre><code>sudo add-apt-repository "deb https://packages.grafana.com/oss/deb stable main"</code></pre>
+      </li>
+      <li>
+        <strong>Actualizar la lista de paquetes:</strong>
+        <pre><code>sudo apt update</code></pre>
+      </li>
+      <li>
+        <strong>Instalar Grafana:</strong>
+        <pre><code>sudo apt install grafana</code></pre>
+      </li>
+      <li>
+        <strong>Iniciar el servicio de Grafana:</strong>
+        <pre><code>sudo systemctl start grafana-server</code></pre>
+      </li>
+      <li>
+        <strong>Verificar que Grafana está activo:</strong>
+        <pre><code>sudo systemctl status grafana-server</code></pre>
+        Si ves <code>Active (running)</code>, la instalación fue exitosa.
+      </li>
+      <li>
+        <strong>Habilitar Grafana para que inicie automáticamente:</strong>
+        <pre><code>sudo systemctl enable grafana-server</code></pre>
+      </li>
+    </ol>
+    <p>
+      Ahora puedes acceder a Grafana desde tu navegador en <code>http://TU_SERVIDOR:3000</code>. El usuario y contraseña por defecto es <strong>admin</strong>. Al primer acceso, te pedirá cambiar la contraseña.
+    </p>
+    <p>
+      Más información: <a href="https://www.rosehosting.com/blog/how-to-install-grafana-on-ubuntu-22-04/" target="_blank">Guía completa en RoseHosting</a>
+    </p>
+
+    <hr class="my-5">
+
+    <h2 class="subsection-title">2. Conectar Grafana con Google Sheets</h2>
+    <ol>
+      <li>
+        En Grafana, ve a <strong>Configuration &rarr; Data Sources</strong> y haz clic en <strong>Add data source</strong>.
+      </li>
+      <li>
+        Busca y selecciona <strong>Google Sheets</strong> como tipo de fuente de datos.
+      </li>
+      <li>
+        <strong>Generar una API Key de Google:</strong>
+        <ul>
+          <li>Abre la <a href="https://console.developers.google.com/apis/credentials" target="_blank">página de credenciales de Google Cloud</a>.</li>
+          <li>Haz clic en <strong>Crear credenciales</strong> y selecciona <strong>Clave de API</strong>.</li>
+          <li>Copia la clave generada.</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Pega la API Key en Grafana:</strong>
+        <ul>
+          <li>En la configuración de la fuente de datos Google Sheets, pega la clave en el campo <strong>API Key</strong>.</li>
+          <li>Haz clic en <strong>Save &amp; Test</strong>. Si ves "success", la conexión es correcta.</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Obtener la ID de la hoja de cálculo:</strong>
+        <ul>
+          <li>Abre la hoja de Google Sheets que quieres usar.</li>
+          <li>En la URL, copia la parte entre <code>/d/</code> y <code>/edit</code>. Esa es la ID.</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Crear un dashboard en Grafana:</strong>
+        <ul>
+          <li>Ve a <strong>Dashboards &rarr; New Dashboard</strong> y añade un panel.</li>
+          <li>Selecciona <strong>Google Sheets</strong> como fuente de datos.</li>
+          <li>Pega la ID de la hoja y selecciona el rango de celdas que quieres visualizar.</li>
+          <li>Configura el tipo de gráfico según tus necesidades.</li>
+        </ul>
+      </li>
+    </ol>
+    <p>
+      <strong>Consejo:</strong> Puedes conectar varias hojas de cálculo y combinar datos en tus dashboards para obtener una visión completa y dinámica.
+    </p>
+
+    <div class="mt-4">
+      <a href="index.html" class="btn btn-outline-light">Volver al blog</a>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personalización de SSH | Pilar on Cloud</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #121212; color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+    a { color: #bb86fc; text-decoration: none; }
+    a:hover { color: #d0a8ff; text-decoration: underline; }
+    .section-title { margin-top: 40px; margin-bottom: 20px; color: #bb86fc; }
+    pre, code { background-color: #232323; color: #bb86fc; padding: 0.2em 0.4em; border-radius: 4px; }
+    .btn-outline-light { border-color: #bb86fc; color: #bb86fc; }
+    .btn-outline-light:hover { background-color: #bb86fc; color: #121212; }
+    ul, ol { margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <h1 class="section-title">Personalización de SSH</h1>
+    <p><strong>Fecha:</strong> 22 de mayo de 2025</p>
+    <p>
+      SSH (Secure Shell) es una herramienta fundamental para la administración remota de servidores Linux. Personalizar su configuración puede mejorar la seguridad y la comodidad en el acceso a tus sistemas.
+    </p>
+
+    <h3>1. Cambiar el puerto por defecto</h3>
+    <p>
+      Por defecto, SSH escucha en el puerto <code>22</code>. Cambiarlo puede ayudar a reducir ataques automatizados.
+    </p>
+    <pre><code>sudo nano /etc/ssh/sshd_config</code></pre>
+    <p>
+      Busca la línea <code>#Port 22</code>, elimínale el <code>#</code> y cambia el número por el puerto que prefieras (por ejemplo, <code>2222</code>):
+    </p>
+    <pre><code>Port 2222</code></pre>
+    <p>
+      Guarda y reinicia el servicio SSH:
+    </p>
+    <pre><code>sudo systemctl restart ssh</code></pre>
+    <p>
+      <strong>Nota:</strong> Si cambias el puerto, deberás especificarlo al conectarte:
+    </p>
+    <pre><code>ssh usuario@ip -p 2222</code></pre>
+
+    <h3>2. Deshabilitar el acceso con contraseña (usar solo llaves)</h3>
+    <p>
+      Para mayor seguridad, puedes deshabilitar el acceso por contraseña y permitir solo autenticación mediante llaves SSH.
+    </p>
+    <pre><code>sudo nano /etc/ssh/sshd_config</code></pre>
+    <p>
+      Cambia o añade las siguientes líneas:
+    </p>
+    <pre><code>PasswordAuthentication no
+PubkeyAuthentication yes</code></pre>
+    <p>
+      Reinicia el servicio SSH:
+    </p>
+    <pre><code>sudo systemctl restart ssh</code></pre>
+    <p>
+      <strong>¡Importante!</strong> Asegúrate de tener tu llave pública en <code>~/.ssh/authorized_keys</code> antes de deshabilitar el acceso por contraseña, o podrías quedarte sin acceso.
+    </p>
+
+    <h3>3. Personalizar el prompt de SSH</h3>
+    <p>
+      Puedes personalizar el prompt (línea de comandos) que ves al conectarte por SSH editando el archivo <code>~/.bashrc</code> del usuario remoto.
+    </p>
+    <pre><code>nano ~/.bashrc</code></pre>
+    <p>
+      Por ejemplo, para mostrar el usuario, host y directorio actual en colores:
+    </p>
+    <pre><code>export PS1="\[\e[0;32m\]\u@\h:\[\e[0;34m\]\w\[\e[0m\]\$ "</code></pre>
+    <p>
+      Guarda y ejecuta:
+    </p>
+    <pre><code>source ~/.bashrc</code></pre>
+
+    <h3>4. Banner de bienvenida personalizado</h3>
+    <p>
+      Puedes mostrar un mensaje personalizado al iniciar sesión por SSH editando el archivo <code>/etc/issue.net</code>:
+    </p>
+    <pre><code>sudo nano /etc/issue.net</code></pre>
+    <p>
+      Escribe tu mensaje de bienvenida. Luego, en <code>/etc/ssh/sshd_config</code> asegúrate de tener:
+    </p>
+    <pre><code>Banner /etc/issue.net</code></pre>
+    <p>
+      Reinicia el servicio SSH para aplicar los cambios.
+    </p>
+
+    <h3>5. Restringir usuarios permitidos</h3>
+    <p>
+      Puedes limitar el acceso SSH solo a ciertos usuarios agregando al final de <code>/etc/ssh/sshd_config</code>:
+    </p>
+    <pre><code>AllowUsers usuario1 usuario2</code></pre>
+
+    <h3>6. Otras recomendaciones de seguridad</h3>
+    <ul>
+      <li>Deshabilita el acceso SSH al usuario <code>root</code> (<code>PermitRootLogin no</code>).</li>
+      <li>Usa <code>Fail2Ban</code> para bloquear intentos de acceso fallidos.</li>
+      <li>Mantén actualizado tu sistema y el servicio SSH.</li>
+    </ul>
+
+    <div class="mt-4">
+      <a href="index.html" class="btn btn-outline-light">Volver al blog</a>
+    </div>
+  </div>
+</body>
+</html>

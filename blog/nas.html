@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuración de OpenVPN y Alta de Usuarios en NAS | Pilar on Cloud</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #121212; color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+    a { color: #bb86fc; text-decoration: none; }
+    a:hover { color: #d0a8ff; text-decoration: underline; }
+    .section-title { margin-top: 40px; margin-bottom: 20px; color: #bb86fc; }
+    .subsection-title { color: #bb86fc; margin-top: 2rem; }
+    pre, code { background-color: #232323; color: #bb86fc; padding: 0.2em 0.4em; border-radius: 4px; }
+    .btn-outline-light { border-color: #bb86fc; color: #bb86fc; }
+    .btn-outline-light:hover { background-color: #bb86fc; color: #121212; }
+    ul, ol { margin-bottom: 1rem; }
+    .explicacion { color: #ccc; font-size: 1.1em; margin-bottom: 2rem; }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <h1 class="section-title text-center">Configuración de OpenVPN y Alta de Usuarios en NAS</h1>
+    <p class="explicacion text-center">
+      Guía rápida para instalar y configurar OpenVPN en Linux y gestionar usuarios en los sistemas NAS.
+    </p>
+
+    <h2 class="subsection-title">1. Instalar y configurar OpenVPN en Linux</h2>
+    <ol>
+      <li>
+        <strong>Establecer la zona horaria:</strong>
+        <pre><code>sudo timedatectl set-timezone Europe/Madrid
+timedatectl</code></pre>
+      </li>
+      <li>
+        <strong>Crear carpeta para VPN:</strong>
+        <pre><code>sudo mkdir /home/usuario/vpn</code></pre>
+      </li>
+      <li>
+        <strong>Instalar OpenVPN:</strong>
+        <pre><code>sudo apt-get update
+sudo apt-get install openvpn</code></pre>
+      </li>
+      <li>
+        <strong>Obtener y copiar el archivo de configuración:</strong>
+        <ul>
+          <li>Descarga <code>VPNConfig.ovpn</code> desde <em>equipos &gt; sistemas &gt; General &gt; Documentos &gt; VPN &gt; VPN_IOON.zip</em> y descomprímelo.</li>
+          <li>Copia el archivo a <code>/etc/openvpn</code>:</li>
+        </ul>
+        <pre><code>sudo cp -i ruta/al/archivo/VPNConfig.ovpn /etc/openvpn</code></pre>
+      </li>
+      <li>
+        <strong>Editar la configuración:</strong>
+        <pre><code>cd /etc/openvpn
+sudo nano VPNConfig.ovpn</code></pre>
+        <span class="text-secondary">En la línea <code>remote</code>, pon la IP: <code>192.168.1.19</code></span>
+      </li>
+      <li>
+        <strong>Conectar a la VPN:</strong>
+        <pre><code>sudo openvpn --config VPNConfig.ovpn</code></pre>
+        <span class="text-secondary">Introduce usuario y contraseña (consultar en <em>practicas sistemas &gt; incidencias &gt; seguridad &gt; Datos NAS 1 2</em>).</span>
+      </li>
+      <li>
+        <strong>Habilitar y arrancar el servicio OpenVPN:</strong>
+        <pre><code>sudo systemctl daemon-reload
+sudo systemctl enable openvpn
+sudo systemctl start openvpn</code></pre>
+      </li>
+    </ol>
+
+    <h2 class="subsection-title">2. Alta de usuarios en NAS</h2>
+    <ul>
+      <li>
+        <strong>Ubicación de credenciales:</strong> <em>teams &gt; equipos &gt; incidencias &gt; archivos &gt; Datos NAS 1 2</em>
+      </li>
+      <li>
+        <strong>NAS 1:</strong> Permite acceder a NAS 2.
+      </li>
+      <li>
+        <strong>NAS 2:</strong> Permite acceder a los archivos de la NAS.
+      </li>
+    </ul>
+    <ol>
+      <li>
+        <strong>Agregar usuario a NAS 1:</strong>
+        <ul>
+          <li>Ir a <strong>Usuarios y grupo &gt; Usuario &gt; Crear</strong>.</li>
+          <li>Marcar la opción: <em>No permitir que el usuario cambie la contraseña</em>.</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Agregar usuario a NAS 2:</strong>
+        <ul>
+          <li>Proceso similar a NAS 1. Usa la misma contraseña.</li>
+          <li>Asigna grupos y permisos según necesidades.</li>
+          <li>Si necesitas crear varios usuarios con permisos similares, configura el primero, selecciónalo y usa la opción <em>copiar usuario</em> para agilizar el proceso.</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Guardar credenciales:</strong>
+        <ul>
+          <li>Registra las credenciales en el Excel de <em>datos NAS 1 2</em>.</li>
+        </ul>
+      </li>
+    </ol>
+
+    <div class="mt-4">
+      <a href="index.html" class="btn btn-outline-light">Volver al blog</a>
+    </div>
+  </div>
+</body>
+</html>
