@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cómo instalar y configurar Wazuh | Pilar on Cloud</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #121212; color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+    a { color: #bb86fc; text-decoration: none; }
+    a:hover { color: #d0a8ff; text-decoration: underline; }
+    .section-title { margin-top: 40px; margin-bottom: 20px; color: #bb86fc; }
+    .subsection-title { color: #bb86fc; margin-top: 2rem; }
+    pre, code { background-color: #232323; color: #bb86fc; padding: 0.2em 0.4em; border-radius: 4px; }
+    .btn-outline-light { border-color: #bb86fc; color: #bb86fc; }
+    .btn-outline-light:hover { background-color: #bb86fc; color: #121212; }
+    ul, ol { margin-bottom: 1rem; }
+    .explicacion { color: #ccc; font-size: 1.1em; margin-bottom: 2rem; }
+    .alert-vpn { background: #ffb300; color: #232323; padding: 1em; border-radius: 6px; font-weight: bold; margin-bottom: 2rem; }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <h1 class="section-title text-center">How To: Monitorización con Wazuh</h1>
+    <p class="explicacion text-center">
+      Wazuh es una plataforma de seguridad open source para monitorizar, detectar amenazas y responder a incidentes en tus sistemas. Aquí aprenderás cómo instalar el agente de Wazuh en los ordenadores que quieres monitorizar.
+    </p>
+
+    <div class="alert-vpn text-center">
+      <span>⚠️ <strong>IMPORTANTE:</strong> Antes de instalar el agente Wazuh, asegúrate de que la VPN esté <u>desactivada</u> en el equipo. Si la VPN está activa, la instalación puede dar errores de conexión con el servidor.</span>
+    </div>
+
+    <h2 class="subsection-title">1. ¿Qué es Wazuh?</h2>
+    <p>
+      Wazuh permite centralizar logs, detectar amenazas, monitorizar integridad de archivos y mucho más, tanto en sistemas Windows como Linux. Es ideal para entornos empresariales que requieren visibilidad y control sobre sus equipos.
+    </p>
+
+    <h2 class="subsection-title">2. Instalación del agente Wazuh en Windows</h2>
+    <ol>
+      <li>
+        <strong>Abre PowerShell como administrador</strong> en el equipo que quieras monitorizar.
+      </li>
+      <li>
+        <strong>Ejecuta el siguiente script para descargar e instalar el agente:</strong>
+        <pre><code>Invoke-WebRequest -Uri https://packages.wazuh.com/4.x/windows/wazuh-agent-4.11.2-1.msi -OutFile $env:tmp\wazuh-agent; msiexec.exe /i $env:tmp\wazuh-agent /q WAZUH_MANAGER='192.168.1.00' WAZUH_AGENT_GROUP='Windows' WAZUH_AGENT_NAME='PC064'</code></pre>
+        <ul>
+          <li><code>WAZUH_MANAGER</code>: IP del servidor Wazuh.</li>
+          <li><code>WAZUH_AGENT_GROUP</code>: Grupo al que se asignará el agente (puedes cambiarlo).</li>
+          <li><code>WAZUH_AGENT_NAME</code>: Nombre identificativo del equipo.</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Verifica que el servicio está en ejecución:</strong>
+        <pre><code>Get-Service WazuhSvc</code></pre>
+        El estado debe ser <code>Running</code>.
+      </li>
+      <li>
+        <strong>Comprueba en la consola de Wazuh</strong> que el nuevo agente aparece y está conectado.
+      </li>
+    </ol>
+
+    <h2 class="subsection-title">3. Instalación del agente Wazuh en Linux (resumen)</h2>
+    <ol>
+      <li>
+        <strong>Descarga e instala el agente:</strong>
+        <pre><code>curl -sO https://packages.wazuh.com/4.x/apt/wazuh-agent_4.11.2-1_amd64.deb
+sudo dpkg -i wazuh-agent_4.11.2-1_amd64.deb</code></pre>
+      </li>
+      <li>
+        <strong>Edita la configuración para indicar el servidor Wazuh:</strong>
+        <pre><code>sudo nano /var/ossec/etc/ossec.conf</code></pre>
+        <span class="text-secondary">Modifica la IP en la sección <code>&lt;server&gt;</code> por la de tu servidor Wazuh.</span>
+      </li>
+      <li>
+        <strong>Inicia y habilita el agente:</strong>
+        <pre><code>sudo systemctl enable wazuh-agent
+sudo systemctl start wazuh-agent</code></pre>
+      </li>
+      <li>
+        <strong>Verifica el estado:</strong>
+        <pre><code>sudo systemctl status wazuh-agent</code></pre>
+      </li>
+    </ol>
+
+    <h2 class="subsection-title">4. Consejos y recursos</h2>
+    <ul>
+      <li>Puedes personalizar el nombre y grupo del agente según tu organización.</li>
+      <li>Consulta la <a href="https://documentation.wazuh.com/current/installation-guide/index.html" target="_blank">documentación oficial de Wazuh</a> para más detalles y otros sistemas operativos.</li>
+      <li>Recuerda abrir los puertos necesarios en el firewall para la comunicación entre agentes y servidor.</li>
+    </ul>
+
+    <div class="mt-4">
+      <a href="index.html" class="btn btn-outline-light">Volver al blog</a>
+    </div>
+  </div>
+</body>
+</html>
