@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Instalación y Configuración de Grafana | Pilar on Cloud</title>
+  <title>Manual Completo: Prometheus, Node Exporter y Grafana | Pilar on Cloud</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body { background-color: #121212; color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
@@ -16,100 +16,232 @@
     .btn-outline-light:hover { background-color: #bb86fc; color: #121212; }
     ul, ol { margin-bottom: 1rem; }
     .explicacion { color: #ccc; font-size: 1.1em; margin-bottom: 2rem; }
+    .alerta { background: #ffb300; color: #232323; padding: 1em; border-radius: 6px; font-weight: bold; margin-bottom: 2rem; }
   </style>
 </head>
 <body>
   <div class="container py-5">
-    <h1 class="section-title text-center">Instalación y Configuración de Grafana</h1>
+    <h1 class="section-title text-center">Manual Completo: Prometheus + Node Exporter + Grafana</h1>
     <p class="explicacion text-center">
-      En esta guía aprenderás a instalar Grafana en Ubuntu, activarlo como servicio y conectarlo con Google Sheets para visualizar datos en dashboards personalizados.
+      Guía paso a paso para instalar, asegurar y monitorizar servidores Linux y cloud con Prometheus, Node Exporter y Grafana. Incluye buenas prácticas de seguridad y configuración TLS.
     </p>
 
-    <h2 class="subsection-title">1. Instalación de Grafana en Ubuntu</h2>
+    <div class="alerta text-center">
+      <span>⚠️ <strong>Seguridad:</strong> En entornos productivos, protege tus métricas y paneles con TLS, autenticación y firewall. No expongas puertos a Internet sin control.</span>
+    </div>
+
+    <h2 class="subsection-title">1. Instalación de Prometheus en Ubuntu Server</h2>
+    <ol>
+      <li><strong>Crear usuario Prometheus:</strong>
+        <pre><code>sudo useradd --no-create-home --shell /bin/false prometheus</code></pre>
+      </li>
+      <li><strong>Descargar y descomprimir Prometheus:</strong>
+        <pre><code>cd /tmp
+wget https://github.com/prometheus/prometheus/releases/download/v2.52.0/prometheus-2.52.0.linux-amd64.tar.gz
+tar -xvf prometheus-2.52.0.linux-amd64.tar.gz
+cd prometheus-2.52.0.linux-amd64</code></pre>
+      </li>
+      <li><strong>Instalar binarios y crear directorios:</strong>
+        <pre><code>sudo mv prometheus /usr/local/bin/
+sudo mv promtool /usr/local/bin/
+sudo mkdir -p /etc/prometheus /var/lib/prometheus
+sudo mv consoles console_libraries /etc/prometheus/</code></pre>
+      </li>
+      <li><strong>Crear archivo de configuración:</strong>
+        <pre><code>sudo nano /etc/prometheus/prometheus.yml</code></pre>
+        <span class="text-secondary">Ejemplo básico:</span>
+        <pre><code>global:
+  scrape_interval: 15s
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+</code></pre>
+      </li>
+      <li><strong>Crear servicio systemd:</strong>
+        <pre><code>sudo nano /etc/systemd/system/prometheus.service</code></pre>
+        <span class="text-secondary">Contenido:</span>
+        <pre><code>[Unit]
+Description=Prometheus
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=prometheus
+ExecStart=/usr/local/bin/prometheus \
+  --config.file=/etc/prometheus/prometheus.yml \
+  --storage.tsdb.path=/var/lib/prometheus/
+
+[Install]
+WantedBy=default.target
+</code></pre>
+      </li>
+      <li><strong>Habilitar y arrancar Prometheus:</strong>
+        <pre><code>sudo systemctl daemon-reload
+sudo systemctl enable prometheus
+sudo systemctl start prometheus
+sudo systemctl status prometheus</code></pre>
+      </li>
+    </ol>
+
+    <h2 class="subsection-title">2. Instalación de Node Exporter en servidores Ubuntu</h2>
+    <ol>
+      <li><strong>Crear usuario Node Exporter:</strong>
+        <pre><code>sudo useradd --no-create-home --shell /bin/false node_exporter</code></pre>
+      </li>
+      <li><strong>Descargar y mover binario:</strong>
+        <pre><code>cd /tmp
+wget https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz
+tar xvf node_exporter-1.6.1.linux-amd64.tar.gz
+sudo mv node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin/
+sudo chown node_exporter:node_exporter /usr/local/bin/node_exporter</code></pre>
+      </li>
+      <li><strong>Crear servicio systemd:</strong>
+        <pre><code>sudo nano /etc/systemd/system/node_exporter.service</code></pre>
+        <span class="text-secondary">Contenido:</span>
+        <pre><code>[Unit]
+Description=Node Exporter
+After=network.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+ExecStart=/usr/local/bin/node_exporter
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+      </li>
+      <li><strong>Habilitar y arrancar Node Exporter:</strong>
+        <pre><code>sudo systemctl daemon-reload
+sudo systemctl enable node_exporter
+sudo systemctl start node_exporter
+sudo systemctl status node_exporter</code></pre>
+      </li>
+      <li><strong>Verificar en navegador:</strong>
+        <pre><code>http://IP_SERVIDOR:9100/metrics</code></pre>
+      </li>
+    </ol>
+
+    <h2 class="subsection-title">3. Configurar Prometheus para varios servidores</h2>
+    <p>Edita <code>/etc/prometheus/prometheus.yml</code> y añade todos los targets:</p>
+    <pre><code>scrape_configs:
+  - job_name: 'node_exporters'
+    static_configs:
+      - targets:
+          - '192.168.0.20:9100'
+          - '192.168.0.22:9100'
+          - '54.12.34.56:9100' # servidor nube AWS
+          - '167.99.88.77:9100' # servidor nube DigitalOcean
+</code></pre>
+    <p>Reinicia Prometheus:</p>
+    <pre><code>sudo systemctl restart prometheus</code></pre>
+
+    <h2 class="subsection-title">4. Seguridad: TLS y autenticación en Node Exporter y Prometheus</h2>
     <ol>
       <li>
-        <strong>Descargar la llave GPG de Grafana:</strong><br>
-        Esto permite que el sistema confíe en los paquetes descargados del repositorio oficial.
-        <pre><code>wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -</code></pre>
+        <strong>Generar certificados TLS:</strong>
+        <pre><code># Servidor (Node Exporter)
+openssl genrsa -out node_exporter.key 2048
+openssl req -new -x509 -key node_exporter.key -out node_exporter.crt -days 365 -subj "/CN=node_exporter"
+
+# Cliente (Prometheus)
+openssl genrsa -out prometheus_client.key 2048
+openssl req -new -key prometheus_client.key -out prometheus_client.csr -subj "/CN=prometheus_client"
+openssl x509 -req -in prometheus_client.csr -CA node_exporter.crt -CAkey node_exporter.key -CAcreateserial -out prometheus_client.crt -days 365
+</code></pre>
+        <span class="text-secondary">Obtendrás los certificados y claves para ambos extremos.</span>
       </li>
       <li>
-        <strong>Añadir el repositorio de Grafana:</strong>
-        <pre><code>sudo add-apt-repository "deb https://packages.grafana.com/oss/deb stable main"</code></pre>
+        <strong>Configurar Node Exporter con TLS (usando stunnel):</strong>
+        <pre><code>sudo apt install stunnel4
+sudo nano /etc/stunnel/stunnel.conf</code></pre>
+        <span class="text-secondary">Ejemplo de configuración:</span>
+        <pre><code>cert = /path/to/node_exporter.crt
+key = /path/to/node_exporter.key
+CAfile = /path/to/prometheus_client.crt
+verify = 2
+foreground = yes
+
+[https]
+accept = 9101
+connect = 9100
+</code></pre>
+        <span class="text-secondary">stunnel escuchará en 9101 con TLS y autenticación mutua.</span>
       </li>
       <li>
-        <strong>Actualizar la lista de paquetes:</strong>
-        <pre><code>sudo apt update</code></pre>
+        <strong>Configurar Prometheus para usar certificados cliente:</strong>
+        <pre><code>scrape_configs:
+  - job_name: 'node_exporters'
+    scheme: https
+    tls_config:
+      ca_file: /path/to/node_exporter.crt
+      cert_file: /path/to/prometheus_client.crt
+      key_file: /path/to/prometheus_client.key
+      insecure_skip_verify: false
+    static_configs:
+      - targets:
+          - 'IP_NODE:9101'
+</code></pre>
       </li>
-      <li>
-        <strong>Instalar Grafana:</strong>
+    </ol>
+
+    <h2 class="subsection-title">5. Firewall y buenas prácticas</h2>
+    <ul>
+      <li>Restringe puertos 9100, 9101 solo a IPs de Prometheus.</li>
+      <li>No expongas Node Exporter a Internet (<code>0.0.0.0/0</code>).</li>
+      <li>En Grafana, define roles y usa contraseñas seguras.</li>
+      <li>En Prometheus, puedes usar NGINX como reverse proxy para autenticación básica o JWT.</li>
+      <li>Mantén logs y haz backups de configuraciones y dashboards.</li>
+    </ul>
+
+    <h2 class="subsection-title">6. Instalación de Grafana</h2>
+    <ol>
+      <li><strong>Añadir repositorio y clave:</strong>
+        <pre><code>sudo apt install -y software-properties-common wget gnupg2
+sudo add-apt-repository "deb https://packages.grafana.com/oss/deb stable main"
+wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
+sudo apt update</code></pre>
+      </li>
+      <li><strong>Instalar Grafana:</strong>
         <pre><code>sudo apt install grafana</code></pre>
       </li>
-      <li>
-        <strong>Iniciar el servicio de Grafana:</strong>
-        <pre><code>sudo systemctl start grafana-server</code></pre>
+      <li><strong>Habilitar y arrancar el servicio:</strong>
+        <pre><code>sudo systemctl enable grafana-server
+sudo systemctl start grafana-server
+sudo systemctl status grafana-server</code></pre>
       </li>
-      <li>
-        <strong>Verificar que Grafana está activo:</strong>
-        <pre><code>sudo systemctl status grafana-server</code></pre>
-        Si ves <code>Active (running)</code>, la instalación fue exitosa.
+      <li><strong>Acceder a Grafana:</strong>
+        <pre><code>http://IP_SERVIDOR:3000</code></pre>
+        <span class="text-secondary">Usuario y contraseña por defecto: <code>admin</code> (se pedirá cambiarla al iniciar).</span>
       </li>
-      <li>
-        <strong>Habilitar Grafana para que inicie automáticamente:</strong>
-        <pre><code>sudo systemctl enable grafana-server</code></pre>
-      </li>
-    </ol>
-    <p>
-      Ahora puedes acceder a Grafana desde tu navegador en <code>http://TU_SERVIDOR:3000</code>. El usuario y contraseña por defecto es <strong>admin</strong>. Al primer acceso, te pedirá cambiar la contraseña.
-    </p>
-    <p>
-      Más información: <a href="https://www.rosehosting.com/blog/how-to-install-grafana-on-ubuntu-22-04/" target="_blank">Guía completa en RoseHosting</a>
-    </p>
-
-    <hr class="my-5">
-
-    <h2 class="subsection-title">2. Conectar Grafana con Google Sheets</h2>
-    <ol>
-      <li>
-        En Grafana, ve a <strong>Configuration &rarr; Data Sources</strong> y haz clic en <strong>Add data source</strong>.
-      </li>
-      <li>
-        Busca y selecciona <strong>Google Sheets</strong> como tipo de fuente de datos.
-      </li>
-      <li>
-        <strong>Generar una API Key de Google:</strong>
+      <li><strong>Añadir fuente de datos Prometheus:</strong>
         <ul>
-          <li>Abre la <a href="https://console.developers.google.com/apis/credentials" target="_blank">página de credenciales de Google Cloud</a>.</li>
-          <li>Haz clic en <strong>Crear credenciales</strong> y selecciona <strong>Clave de API</strong>.</li>
-          <li>Copia la clave generada.</li>
+          <li>Ir a <strong>Configuration &rarr; Data Sources &rarr; Add Data Source</strong></li>
+          <li>Seleccionar <strong>Prometheus</strong></li>
+          <li>URL: <code>http://localhost:9090</code> (o <code>https://IP_PROMETHEUS:9090</code> si usas TLS)</li>
+          <li>Configura autenticación y TLS según tu entorno</li>
+          <li>Guardar y probar</li>
         </ul>
       </li>
-      <li>
-        <strong>Pega la API Key en Grafana:</strong>
+      <li><strong>Importar dashboard Node Exporter:</strong>
         <ul>
-          <li>En la configuración de la fuente de datos Google Sheets, pega la clave en el campo <strong>API Key</strong>.</li>
-          <li>Haz clic en <strong>Save &amp; Test</strong>. Si ves "success", la conexión es correcta.</li>
-        </ul>
-      </li>
-      <li>
-        <strong>Obtener la ID de la hoja de cálculo:</strong>
-        <ul>
-          <li>Abre la hoja de Google Sheets que quieres usar.</li>
-          <li>En la URL, copia la parte entre <code>/d/</code> y <code>/edit</code>. Esa es la ID.</li>
-        </ul>
-      </li>
-      <li>
-        <strong>Crear un dashboard en Grafana:</strong>
-        <ul>
-          <li>Ve a <strong>Dashboards &rarr; New Dashboard</strong> y añade un panel.</li>
-          <li>Selecciona <strong>Google Sheets</strong> como fuente de datos.</li>
-          <li>Pega la ID de la hoja y selecciona el rango de celdas que quieres visualizar.</li>
-          <li>Configura el tipo de gráfico según tus necesidades.</li>
+          <li>Ir a <strong>Dashboards &rarr; Import</strong></li>
+          <li>Poner ID: <code>1860</code></li>
+          <li>Seleccionar la fuente de datos</li>
+          <li>Cargar el panel</li>
         </ul>
       </li>
     </ol>
-    <p>
-      <strong>Consejo:</strong> Puedes conectar varias hojas de cálculo y combinar datos en tus dashboards para obtener una visión completa y dinámica.
-    </p>
+
+    <h2 class="subsection-title">7. Consejos finales</h2>
+    <ul>
+      <li>Protege los puertos abiertos (9090, 9100, 3000) con firewall.</li>
+      <li>Usa contraseñas seguras y roles en Grafana.</li>
+      <li>Puedes agregar más servidores añadiéndolos a <code>prometheus.yml</code>.</li>
+      <li>Haz copias de seguridad de configuraciones y dashboards.</li>
+    </ul>
 
     <div class="mt-4">
       <a href="index.html" class="btn btn-outline-light">Volver al blog</a>
